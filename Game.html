@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>--- Squaring A Coin Triangle ---</title>
+    
+  <style>
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-image:url("back.jpg")
+    }
+    .container {
+        margin: auto;
+        width: 80%;
+        text-align: center;
+        padding: 20px;
+        background-color: #FFFFFF;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+    }
+    h1 {
+        color: white;
+        background-image:url("bgimage.jpg")
+    }
+    label {
+        display: block;
+        margin-bottom: 10px;
+    }
+    input[type="number"] {
+        padding: 5px;
+        border-radius: 5px;
+        border: 1px solid #CCCCCC;
+    }
+    button {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: none;
+        background-color: #337AB7;
+        color: #FFFFFF;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    button:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+    #triangle-output {
+        display: inline-block;
+        font-size: 2em;
+        margin-top: 20px;
+    }
+    #triangle-output .row {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    #triangle-output .row .coin {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: gold;
+        margin: 2px;
+    }
+</style>
+</head>
+
+	<center><h1>--- Squaring A Coin Triangle ---</h1></center>
+    <body>
+	<center><h2>WELCOME TO THE PUZZLE</h2>
+        <hr size="10" color="black">
+        <br><br>
+        <h2>Select a difficulty level:</h2>
+	<select id="level-input">
+		<option value="1">Easy</option>
+		<option value="2">Medium</option>
+		<option value="3">Hard</option>
+		<option value="4">Expert</option>
+		<option value="5">Master</option>
+	</select>
+	<button id="submit-button">Start Game</button>
+	<div id="message"></div>
+  <div id="triangle-output"></div>
+	<div>
+		<label for="guess-input">Guess the minimum number of coins to move:</label>
+		<input type="number" id="guess-input" disabled>
+		<button id="guess-button" disabled>Guess</button></center>
+	</div>
+
+	<script>
+// Define the difficulty levels and the number of levels in the triangle for each level
+difficulty_levels = {
+    '1': [3, 3],
+    '2': [5, 5],
+    '3': [7, 7],
+    '4': [9, 9],
+    '5': [11, 11]
+};
+
+var level_choice = '';
+var total_coins = 0;
+var square_coins = 0;
+var extra_coins = 0;
+var n = 0;
+var coins_moved = 0;
+var levels = [];
+var level = '';
+var guesses = 0;
+
+// Get UI elements
+var message = document.getElementById('message');
+var level_input = document.getElementById('level-input');
+var submit_button = document.getElementById('submit-button');
+var guess_input = document.getElementById('guess-input');
+var guess_button = document.getElementById('guess-button');
+var triangle_output = document.getElementById('triangle-output');
+
+// Choose a random difficulty level and the number of levels in the triangle
+submit_button.addEventListener('click', function() {
+    level_choice = level_input.value;
+    if (level_choice in difficulty_levels) {
+        var min_levels = difficulty_levels[level_choice][0];
+        var max_levels = difficulty_levels[level_choice][1];
+        n = Math.floor(Math.random() * (max_levels - min_levels + 1)) + min_levels;
+
+        message.textContent = 'Number of levels in the triangle: ' + n;
+
+// Calculate the total number of coins in the triangle
+        var total_coins = 0;
+for (var i = 1; i <= n; i++) {
+  total_coins += i;
+}
+
+
+// Calculate the number of coins required to create a perfect square
+square_coins = Math.pow(Math.floor(Math.sqrt(total_coins)), 2);
+
+
+// Add more coins to the triangle if necessary
+if (total_coins < square_coins) {
+    extra_coins = square_coins - total_coins;
+    total_coins += extra_coins;
+    n += 1;
+}
+// Divide the triangle into two equal right triangles and move coins to create a square
+coins_moved = 0;
+levels = [];
+level = '';
+for (var i = 1; i <= n; i++) {
+    level += 'O'; 
+    levels.push(level);
+            var coins_in_small_triangle = 0;
+for (var j = 1; j <= i/2; j++) {
+    coins_in_small_triangle += j;
+}
+            var coins_in_large_triangle = total_coins - coins_in_small_triangle;
+            coins_moved += coins_in_small_triangle;
+            total_coins = coins_in_large_triangle;
+        }
+        // Count the number of coins moved to create the square
+        coins_moved += total_coins;
+
+        // Display the right angled isosceles triangle
+        var triangle_output_string = 'Triangle:\n';
+        for (var i = 0; i < levels.length; i++) {
+            triangle_output_string += levels[i] + '\n';
+        }
+        triangle_output.textContent = triangle_output_string;
+
+ // Start the guessing game
+ message.textContent = 'Think of a number. Can you guess the minimum number of coins that need to be moved to create a square? You have 3 tries.';
+        guess_input.disabled = false;
+        guess_button.disabled = false;
+    } else {
+        message.textContent = 'Invalid choice. Please choose a difficulty level from 1 to 5.';
+    }
+});
+// Handle guesses
+guess_button.addEventListener('click', function() {
+    var guess = parseInt(guess_input.value);
+    if (isNaN(guess)) {
+        message.textContent = 'Invalid guess. Please enter a number.';
+    } else {
+        guesses += 1;
+        if (guess < coins_moved) {
+            message.textContent = 'Your guess is too low.';
+        } else if (guess > coins_moved) {
+            message.textContent = 'Your guess is too high.';
+        } else {
+            message.textContent = 'Congratulations! You guessed the correct answer in ' + guesses + ' guesses.';
+            guess_input.disabled = true;
+            guess_button.disabled = true;
+        }
+        if (guesses === 4) {
+            message.textContent = 'Sorry, you have used all your tries. The correct answer was ' + coins_moved + '.';
+            guess_input.disabled = true;
+            guess_button.disabled = true;
+        }
+    }
+});
+
+	</script>
+    <br><br><br>&nbsp;&nbsp;
+    <a href="MainPage.html"><button size="200">🢀 GO BACK TO HOMEPAGE</button></a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="Exit.html"><button size="200"> EXIT THE PUZZLE 🢂</button></a>
+    <hr size="10" color="black">
+    <br>
+    <hr size="40" color="black">
+</body>
+
+</html>
